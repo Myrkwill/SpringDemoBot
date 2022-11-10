@@ -1,6 +1,8 @@
 package ru.myrkwill.SpringDemoBot.service;
 
+import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -19,6 +21,9 @@ import java.util.List;
 public class TelegramBot extends TelegramLongPollingBot {
 
     final BotConfig config;
+
+    @Autowired
+    UserService userService;
 
     static final String HELP_TEXT = "This bot is created to demonstrate Spring capabilities.\n\n" +
             "You can execute commands from the main menu on the left or by typing a command:\n\n" +
@@ -61,6 +66,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             switch (messageText) {
                 case "/start":
+                    userService.registerUser(update.getMessage());
                     startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
                     break;
                 case "/help":
@@ -74,7 +80,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String firstName) {
-        String answer = "Hi, " + firstName + ", nice to meet you!";
+        String answer = EmojiParser.parseToUnicode("Hi, " + firstName + ", nice to meet you!" + ":blush:");
+
         log.info("Replied to user " + firstName);
         sendMessage(chatId, answer);
     }
@@ -90,4 +97,5 @@ public class TelegramBot extends TelegramLongPollingBot {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+
 }
